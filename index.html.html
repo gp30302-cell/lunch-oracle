@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>午餐命定｜神秘觀測最終版</title>
+    <style>
+        :root {
+            --gold: #FFD700;
+            --matrix: #00ff41;
+            --bg-dark: #0a0a1a;
+            --card-w: 100px;
+            --card-h: 150px;
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; width: 100%; margin: 0; padding: 0; overflow: hidden; background: #000; }
+
+        body {
+            background: radial-gradient(circle at center, #1a1a2e, var(--bg-dark));
+            color: white; font-family: 'PingFang TC', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; padding: 2vh; position: relative;
+        }
+
+        /* 流星特效 */
+        .night-sky { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; }
+        .shooting-star {
+            position: absolute; top: 0; left: 0; width: 150px; height: 2px;
+            background: linear-gradient(-45deg, rgba(255,215,0,0.8), rgba(255,255,255,0));
+            filter: drop-shadow(0 0 6px var(--gold));
+            opacity: 0; animation: shoot 4s linear infinite;
+        }
+        @keyframes shoot {
+            0% { transform: translate(-100px, -100px) rotate(-45deg); opacity: 0; }
+            10% { opacity: 1; }
+            30% { transform: translate(120vw, 120vh) rotate(-45deg); opacity: 0; }
+            100% { opacity: 0; }
+        }
+        .shooting-star:nth-child(2) { animation-delay: 2s; top: 20%; }
+        .shooting-star:nth-child(3) { animation-delay: 4s; top: 40%; animation-duration: 3s; }
+
+        .main-content { z-index: 10; display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+        .header { text-align: center; margin-bottom: 2vh; }
+        .logo { font-size: 2rem; font-weight: bold; color: var(--gold); text-shadow: 0 0 15px rgba(255,215,0,0.5); margin: 0; }
+        .status { color: var(--matrix); font-size: 0.65rem; border: 1px solid var(--matrix); padding: 2px 10px; border-radius: 10px; margin-top: 5px; display: inline-block; font-family: monospace; }
+
+        .card-deck { display: flex; gap: 15px; margin-bottom: 3vh; perspective: 1000px; }
+        .tarot-card { width: var(--card-w); height: var(--card-h); position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); cursor: pointer; }
+        .tarot-card.flipped { transform: rotateY(180deg); }
+
+        .card-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; border: 1.8px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 2rem; box-shadow: 0 5px 15px rgba(0,0,0,0.4); }
+        .card-back { background: #111; color: var(--gold); }
+        .card-front { background: #fff; transform: rotateY(180deg); display: flex; flex-direction: column; color: #333; font-size: 3rem; }
+
+        #result-panel { display: none; width: 100%; max-width: 420px; background: rgba(255,255,255,0.08); backdrop-filter: blur(12px); border-radius: 15px; padding: 15px 20px; border: 1px solid rgba(255,215,0,0.2); animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .store-name { font-size: 1.4rem; color: var(--gold); margin-bottom: 10px; text-align: center; font-weight: bold; }
+        .tag-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-bottom: 12px; }
+        .tag { background: rgba(255,255,255,0.05); padding: 5px; border-radius: 6px; text-align: center; font-size: 0.65rem; }
+        .tag b { display: block; color: var(--gold); font-size: 0.6rem; margin-bottom: 2px; }
+        .desc { line-height: 1.4; color: #eee; font-size: 0.85rem; border-top: 1px dotted rgba(255,255,255,0.2); padding-top: 10px; text-align: justify; }
+        .reset-btn { background: var(--gold); border: none; padding: 8px; border-radius: 20px; font-weight: bold; cursor: pointer; margin-top: 15px; width: 100%; font-size: 0.8rem; color: #000; }
+    </style>
+</head>
+<body>
+
+<div class="night-sky">
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+    <div class="shooting-star"></div>
+</div>
+
+<div class="main-content">
+    <div class="header">
+        <h1 class="logo">午餐命定</h1>
+        <div class="status">● STITCH ORACLE v4.0: STABLE</div>
+        <p style="opacity:0.5; font-size:0.7rem; margin:5px 0 0;">南區辦公室．即時觀測中</p>
+    </div>
+
+    <div class="card-deck" id="deck">
+        <div class="tarot-card" onclick="handleFlip(this)">
+            <div class="card-face card-back">🔮</div>
+            <div class="card-face card-front">🍱</div>
+        </div>
+        <div class="tarot-card" onclick="handleFlip(this)">
+            <div class="card-face card-back">🔯</div>
+            <div class="card-face card-front">🍜</div>
+        </div>
+        <div class="tarot-card" onclick="handleFlip(this)">
+            <div class="card-face card-back">⚔️</div>
+            <div class="card-face card-front">🥪</div>
+        </div>
+    </div>
+
+    <div id="result-panel">
+        <div class="store-name" id="res-name"></div>
+        <div class="tag-row">
+            <div class="tag"><b>距離</b><span id="res-dist"></span></div>
+            <div class="tag"><b>共感</b><span id="res-sync"></span></div>
+            <div class="tag" style="background:rgba(0,255,0,0.1)"><b>宜</b><span id="res-should"></span></div>
+            <div class="tag" style="background:rgba(255,0,0,0.1)"><b>忌</b><span id="res-avoid"></span></div>
+        </div>
+        <div class="desc" id="res-desc"></div>
+        <button class="reset-btn" onclick="location.reload()">重新感應磁場</button>
+    </div>
+</div>
+
+<script>
+    const dataList = [
+        { name: "正忠排骨飯 (十全店)", dist: "850m", sync: "98%", should: "多喝水", avoid: "敏感話題", icon: "🍖", desc: "今日氣場與『厚實』同步。排骨的酥脆度與下午報告成功率成正比。骨頭往東南丟可化解小人。" },
+        { name: "上海生煎湯包", dist: "1.2km", sync: "85%", should: "午睡", avoid: "接陌生電話", icon: "🥟", desc: "偵測到滾燙財庫！運勢如同這口湯包，內裡熱誠。咬下時請保持優雅，可吸納周邊貴人氣場。" },
+        { name: "昂司咖啡 (輕食)", dist: "600m", sync: "82%", should: "換桌布", avoid: "用眼過度", icon: "🥪", desc: "今日宜啟動『精緻辦公模式』。這份輕食能過濾冗長會議廢話，讓 CPU 運轉速度提升 20%。" },
+        { name: "大港飯糰 (總店)", dist: "1.5km", sync: "95%", should: "整桌面", avoid: "抱怨午餐", icon: "🍙", desc: "扎實的飯糰是行動力保證。鹹蛋黃是今日轉運核心，能顯著增加你在職場的向心力與凝聚力。" },
+        { name: "熱河街愛玉冰", dist: "1.1km", sync: "88%", should: "微笑", avoid: "久坐不動", icon: "🍧", desc: "清心開運。這碗愛玉將為你擋掉下午不必要的職場躁氣，保持靈魂清爽，大吉。" }
+    ];
+
+    let flipped = false;
+    let audioCtx = null;
+
+    // 初始化聲音
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+    }
+
+    // 播放聲音
+    function playSound() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+        gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+    }
+
+    function handleFlip(element) {
+        if (flipped) return;
+        flipped = true;
+
+        // 喚醒聲音
+        initAudio();
+        playSound();
+
+        // 隨機選取
+        const res = dataList[Math.floor(Math.random() * dataList.length)];
+        
+        // 翻牌動畫
+        element.classList.add('flipped');
+        
+        // 其他卡片變淡
+        document.querySelectorAll('.tarot-card').forEach(c => {
+            if (c !== element) {
+                c.style.opacity = "0.1";
+                c.style.transform = "scale(0.8)";
+            }
+        });
+
+        // 呈現結果
+        setTimeout(() => {
+            document.getElementById('res-name').innerText = res.name;
+            document.getElementById('res-dist').innerText = res.dist;
+            document.getElementById('res-sync').innerText = res.sync;
+            document.getElementById('res-should').innerText = res.should;
+            document.getElementById('res-avoid').innerText = res.avoid;
+            document.getElementById('res-desc').innerText = res.desc;
+            element.querySelector('.card-front').innerText = res.icon;
+            document.getElementById('result-panel').style.display = 'block';
+        }, 500);
+    }
+</script>
+</body>
+</html>
